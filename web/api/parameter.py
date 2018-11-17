@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, json
 from sqlalchemy import text as sql
 from web import util
 
@@ -24,12 +24,20 @@ def parameter_create():
 
 @bp.route("/parameter/<parameter_id>", methods=['GET'])
 def parameter_get(parameter_id):
-    return jsonify(parameter_id)
+    parameter = ENGINE.execute(sql('''
+        SELECT parameterId, variable, unit, parameterType FROM parameters WHERE parameterId=:parameter_id
+    '''), parameter_id=parameter_id).fetchone()
+    assert parameter, f'Parameter does not exists: {parameter_id}'
+    return jsonify(**parameter)
 
 
 @bp.route("/parameter", methods=['GET'])
 def parameter_list():
-    return jsonify([])
+    parameters = ENGINE.execute(sql('''
+            SELECT parameterId, variable, unit, parameterType FROM parameters
+        ''')).fetchall()
+    print(parameters)
+    return jsonify([dict(i) for i in parameters])
 
 
 @bp.route("/parameter/<parameter_id>", methods=['PUT'])

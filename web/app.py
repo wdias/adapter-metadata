@@ -7,7 +7,6 @@ try:
 except AssertionError:
     pass
 
-engine = util.get_engine('metadata')
 app = Flask(__name__)
 # Register endpoints
 app.register_blueprint(timeseries.bp)

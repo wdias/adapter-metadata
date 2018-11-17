@@ -1,28 +1,13 @@
-from flask import Flask, g, request, jsonify
+from flask import Flask, request, jsonify
+from web import util
+from web.api import timeseries
 
+try: assert False; import sys; sys.exit('ERROR asserts disabled, exiting')
+except AssertionError: pass
+
+engine = util.get_engine('metadata')
 app = Flask(__name__)
-
-
-@app.route("/timeseries", methods=['POST'])
-def timeseries_create():
-    data = request.get_json()
-    return jsonify(data)
-
-
-@app.route("/timeseries/<timeseries_id>", methods=['GET'])
-def timeseries_get(timeseries_id):
-    return jsonify(timeseriesId=timeseries_id)
-
-
-@app.route("/timeseries", methods=['GET'])
-def timeseries_list():
-    data = request.get_json()
-    return jsonify([])
-
-
-@app.route("/timeseries/<timeseries_id>", methods=['DELETE'])
-def timeseries_delete(timeseries_id):
-    return jsonify(timeseriesId=timeseries_id)
+app.register_blueprint(timeseries.bp)
 
 
 @app.route("/public/hc")
@@ -34,7 +19,8 @@ def public_hc():
 def handle_assertion(error):
     ret = {'code': 400, 'error': error.args[0]}
     app.logger.warn('ERR {code} {error}'.format(**ret),
-        extra={'event': 'error', 'error': ret['error']})
+                    extra={'event': 'error', 'error': ret['error']})
+    print('ERR {code} {error}'.format(**ret))
     return jsonify(**ret), ret['code']
 
 

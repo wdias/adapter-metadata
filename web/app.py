@@ -1,13 +1,19 @@
 from flask import Flask, request, jsonify
 from web import util
-from web.api import timeseries
+from web.api import timeseries, location, parameter, timestep
 
-try: assert False; import sys; sys.exit('ERROR asserts disabled, exiting')
-except AssertionError: pass
+try:
+    assert False; import sys; sys.exit('ERROR asserts disabled, exiting')
+except AssertionError:
+    pass
 
 engine = util.get_engine('metadata')
 app = Flask(__name__)
+# Register endpoints
 app.register_blueprint(timeseries.bp)
+app.register_blueprint(location.bp)
+app.register_blueprint(parameter.bp)
+app.register_blueprint(timestep.bp)
 
 
 @app.route("/public/hc")

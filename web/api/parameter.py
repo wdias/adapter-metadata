@@ -36,7 +36,6 @@ def parameter_list():
     parameters = ENGINE.execute(sql('''
             SELECT parameterId, variable, unit, parameterType FROM parameters
         ''')).fetchall()
-    print(parameters)
     return jsonify([dict(i) for i in parameters])
 
 

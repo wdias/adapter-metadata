@@ -21,8 +21,8 @@ def timeseries_create():
     data = request.get_json()
     with ENGINE.begin() as conn:
         # Parameter
-        assert 'parameter_id' in data or 'parameter' in data, f'`{parameter_id}` or `{parameter}` should be provided'
-        parameter = data.get('parameter')
+        assert 'parameterId' in data or 'parameter' in data, f'`{parameterId}` or `{parameter}` should be provided'
+        parameter = data.get('parameter', {})
         data['parameterId'] = parameter_id = data.get('parameterId', parameter.get('parameterId'))
         exist_parameter_id = conn.execute(sql('''
             SELECT parameterId FROM parameters WHERE parameterId=:parameter_id
@@ -32,8 +32,8 @@ def timeseries_create():
             exist_parameter_id = parameter
         assert exist_parameter_id, f'Parameter does not exists: {parameter_id}'
         # Location
-        assert 'location_id' in data or 'location' in data, f'`{location_id}` or `{location}` should be provided'
-        location = data.get('location')
+        assert 'locationId' in data or 'location' in data, f'`{locationId}` or `{location}` should be provided'
+        location = data.get('location', {})
         data['locationId'] = location_id = data.get('locationId', location.get('locationId'))
         exist_location_id = conn.execute(sql('''
             SELECT locationId FROM locations WHERE locationId=:location_id
@@ -43,8 +43,8 @@ def timeseries_create():
             exist_location_id = location
         assert exist_location_id, f'Location does not exists: {location_id}'
         # TimeStep
-        assert 'time_step_id' in data or 'timeStep' in data, f'`{time_step_id}` or `{timeStep}` should be provided'
-        time_step = data.get('timeStep')
+        assert 'timeStepId' in data or 'timeStep' in data, f'`{timeStepId}` or `{timeStep}` should be provided'
+        time_step = data.get('timeStep', {})
         data['timeStepId'] = time_step_id = data.get('timeStepId', time_step.get('timeStepId'))
         exist_time_step_id = conn.execute(sql('''
             SELECT timeStepId FROM time_steps WHERE timeStepId=:time_step_id
@@ -65,15 +65,28 @@ def timeseries_create():
 
 @bp.route("/timeseries/<timeseries_id>", methods=['GET'])
 def timeseries_get(timeseries_id):
-    return jsonify(timeseriesId=timeseries_id)
+    timeseries = ENGINE.execute(sql('''
+        SELECT timeseriesId, moduleId, valueType, parameterId, locationId, timeseriesType, timeStepId
+        FROM timeseries WHERE timeseriesId=:timeseries_id
+    '''), timeseries_id=timeseries_id).fetchone()
+    assert timeseries, f'TimeStep does not exists: {timeseries_id}'
+    return jsonify(**timeseries)
 
 
 @bp.route("/timeseries", methods=['GET'])
 def timeseries_list():
-    data = request.get_json()
-    return jsonify([])
+    timeseries = ENGINE.execute(sql('''
+        SELECT timeseriesId, moduleId, valueType, parameterId, locationId, timeseriesType, timeStepId
+        FROM timeseries
+    ''')).fetchall()
+    assert timeseries, f'TimeStep does not exists: {timeseries_id}'
+    return jsonify([dict(i) for i in timeseries])
 
 
 @bp.route("/timeseries/<timeseries_id>", methods=['DELETE'])
 def timeseries_delete(timeseries_id):
-    return jsonify(timeseriesId=timeseries_id)
+    timeseries = ENGINE.execute(sql('''
+        DELETE FROM timeseries
+        WHERE timeseriesId=:timeseries_id
+    '''), timeseries_id=timeseries_id)
+    return jsonify(timeseries_id)

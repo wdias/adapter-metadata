@@ -31,7 +31,8 @@ def db_location_create(conn, data):
 @bp.route("/point/<location_id>", methods=['GET'])
 def location_point_get(location_id):
     location = ENGINE.execute(sql('''
-        SELECT locationId, name, lat, lon FROM locations WHERE locationId=:location_id
+        SELECT locationId, name, lat, lon 
+        FROM locations WHERE locationId=:location_id
     '''), location_id=location_id).fetchone()
     assert location, f'Location does not exists: {location_id}'
     return jsonify(**location)

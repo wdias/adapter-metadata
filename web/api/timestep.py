@@ -34,7 +34,8 @@ def db_time_step_create(conn, data):
 @bp.route("/timestep/<time_step_id>", methods=['GET'])
 def timestep_get(time_step_id):
     time_step = ENGINE.execute(sql('''
-        SELECT timeStepId, unit, multiplier, divider FROM time_steps WHERE timeStepId=:time_step_id
+        SELECT timeStepId, unit, multiplier, divider 
+        FROM time_steps WHERE timeStepId=:time_step_id
     '''), time_step_id=time_step_id).fetchone()
     assert time_step, f'TimeStep does not exists: {time_step_id}'
     return jsonify(**time_step)

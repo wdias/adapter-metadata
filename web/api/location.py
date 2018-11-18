@@ -16,11 +16,16 @@ def location_point_create():
             SELECT locationId FROM locations WHERE locationId=:location_id
         '''), location_id=location_id).fetchone()
         assert exists_id is None, f'Location already exists: {location_id}'
-        conn.execute(sql('''
-            INSERT INTO locations (locationId, name, lat, lon)
-            VALUES (:locationId, :name, :lat, :lon)
-        '''), **data)
+        db_location_create(conn, data)
         return jsonify(data)
+
+
+def db_location_create(conn, data):
+    conn.execute(sql('''
+        INSERT INTO locations (locationId, name, lat, lon)
+        VALUES (:locationId, :name, :lat, :lon)
+    '''), **data)
+    return data
 
 
 @bp.route("/point/<location_id>", methods=['GET'])
@@ -35,8 +40,8 @@ def location_point_get(location_id):
 @bp.route("/point", methods=['GET'])
 def location_point_list():
     locations = ENGINE.execute(sql('''
-            SELECT locationId, name, lat, lon FROM locations
-        ''')).fetchall()
+        SELECT locationId, name, lat, lon FROM locations
+    ''')).fetchall()
     return jsonify([dict(i) for i in locations])
 
 
@@ -49,9 +54,9 @@ def location_point_update(location_id):
 @bp.route("/point/<location_id>", methods=['DELETE'])
 def location_point_delete(location_id):
     ENGINE.execute(sql('''
-            DELETE FROM locations
-            WHERE locationId=:location_id
-        '''), location_id=location_id)
+        DELETE FROM locations
+        WHERE locationId=:location_id
+    '''), location_id=location_id)
     return jsonify(location_id)
 
 

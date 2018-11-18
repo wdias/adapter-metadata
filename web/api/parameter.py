@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, json
+from flask import Blueprint, request, jsonify
 from sqlalchemy import text as sql
 from web import util
 

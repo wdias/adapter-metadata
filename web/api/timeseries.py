@@ -53,6 +53,10 @@ def timeseries_create():
             t_timestep.db_time_step_create(conn, time_step)
             exist_time_step_id = time_step
         assert exist_time_step_id, f'TimeStep does not exists: {time_step_id}'
+        # TimeseriesType
+        assert data.get('timeseriesType') in ['ExternalHistorical', 'ExternalForecasting', 'SimulatedHistorical', 'SimulatedForecasting'], 'TimeseriesType does not have a valid value'
+        # ValueType
+        assert data.get('valueType') in ['Scalar', 'Vector', 'Grid'], 'ValueType does not have a valid value'
 
         # Create Timeseries
         timeseries = util.get_timeseries(**data)
@@ -69,7 +73,7 @@ def timeseries_get(timeseries_id):
         SELECT timeseriesId, moduleId, valueType, parameterId, locationId, timeseriesType, timeStepId
         FROM timeseries WHERE timeseriesId=:timeseries_id
     '''), timeseries_id=timeseries_id).fetchone()
-    assert timeseries, f'TimeStep does not exists: {timeseries_id}'
+    assert timeseries, f'Timeseries does not exists: {timeseries_id}'
     return jsonify(**timeseries)
 
 
@@ -79,7 +83,7 @@ def timeseries_list():
         SELECT timeseriesId, moduleId, valueType, parameterId, locationId, timeseriesType, timeStepId
         FROM timeseries
     ''')).fetchall()
-    assert timeseries, f'TimeStep does not exists: {timeseries_id}'
+    assert timeseries, f'Timeseries does not exists: {timeseries_id}'
     return jsonify([dict(i) for i in timeseries])
 
 

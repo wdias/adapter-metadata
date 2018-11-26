@@ -19,6 +19,8 @@ ENGINE = util.get_engine('metadata')
 @bp.route("/timeseries", methods=['POST'])
 def timeseries_create():
     data = request.get_json()
+    print('POST timeseries_create:', data)
+    assert data and isinstance(data, dict), f'Timeseries data should be provided'
     with ENGINE.begin() as conn:
         # Parameter
         assert 'parameterId' in data or 'parameter' in data, f'`{parameterId}` or `{parameter}` should be provided'

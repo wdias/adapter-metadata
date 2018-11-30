@@ -23,7 +23,7 @@ def timeseries_create():
     assert data and isinstance(data, dict), f'Timeseries data should be provided'
     with ENGINE.begin() as conn:
         # Parameter
-        assert 'parameterId' in data or 'parameter' in data, f'`{parameterId}` or `{parameter}` should be provided'
+        assert 'parameterId' in data or 'parameter' in data, f'`parameterId` or `parameter` should be provided'
         parameter = data.get('parameter', {})
         data['parameterId'] = parameter_id = data.get('parameterId', parameter.get('parameterId'))
         exist_parameter_id = conn.execute(sql('''
@@ -32,9 +32,9 @@ def timeseries_create():
         if exist_parameter_id is None and parameter:
             t_parameter.db_parameter_create(conn, parameter)
             exist_parameter_id = parameter
-        assert exist_parameter_id, f'Parameter does not exists: {parameter_id}'
+        assert exist_parameter_id, f'Parameter does not exists: parameter_id'
         # Location
-        assert 'locationId' in data or 'location' in data, f'`{locationId}` or `{location}` should be provided'
+        assert 'locationId' in data or 'location' in data, f'`locationId` or `location` should be provided'
         location = data.get('location', {})
         data['locationId'] = location_id = data.get('locationId', location.get('locationId'))
         exist_location_id = conn.execute(sql('''
@@ -45,7 +45,7 @@ def timeseries_create():
             exist_location_id = location
         assert exist_location_id, f'Location does not exists: {location_id}'
         # TimeStep
-        assert 'timeStepId' in data or 'timeStep' in data, f'`{timeStepId}` or `{timeStep}` should be provided'
+        assert 'timeStepId' in data or 'timeStep' in data, f'`timeStepId` or `timeStep` should be provided'
         time_step = data.get('timeStep', {})
         data['timeStepId'] = time_step_id = data.get('timeStepId', time_step.get('timeStepId'))
         exist_time_step_id = conn.execute(sql('''
@@ -85,7 +85,6 @@ def timeseries_list():
         SELECT timeseriesId, moduleId, valueType, parameterId, locationId, timeseriesType, timeStepId
         FROM timeseries
     ''')).fetchall()
-    assert timeseries, f'Timeseries does not exists: {timeseries_id}'
     return jsonify([dict(i) for i in timeseries])
 
 

@@ -81,10 +81,16 @@ def timeseries_get(timeseries_id):
 
 @bp.route("/timeseries", methods=['GET'])
 def timeseries_list():
+    # TODO: Limiting and Skipping
+    q = ''
+    if len(request.query_string):
+        for key in request.args.to_dict().keys():
+            q += f'{" AND" if len(q) else "WHERE"} {key}=:{key}'
+
     timeseries = ENGINE.execute(sql('''
         SELECT timeseriesId, moduleId, valueType, parameterId, locationId, timeseriesType, timeStepId
         FROM timeseries
-    ''')).fetchall()
+    ''' + q), **request.args.to_dict()).fetchall()
     return jsonify([dict(i) for i in timeseries])
 
 

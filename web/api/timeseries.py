@@ -3,9 +3,11 @@ from sqlalchemy import text as sql
 
 from web import util
 from web.api import parameter as t_parameter, location as t_location, timestep as t_timestep
+from web.cache import Cache
 
 bp = Blueprint('timeseries', __name__)
 ENGINE = util.get_engine('metadata')
+CACHE = Cache()
 
 """ Timeseries Structure:
     id timeseriesId
@@ -71,10 +73,14 @@ def timeseries_create():
 
 @bp.route("/timeseries/<timeseries_id>", methods=['GET'])
 def timeseries_get(timeseries_id):
-    timeseries = ENGINE.execute(sql('''
-        SELECT timeseriesId, moduleId, valueType, parameterId, locationId, timeseriesType, timeStepId
-        FROM timeseries WHERE timeseriesId=:timeseries_id
-    '''), timeseries_id=timeseries_id).fetchone()
+    timeseries = CACHE.get(timeseries_id)
+    print("cached:", timeseries)
+    if timeseries is None:
+        timeseries = ENGINE.execute(sql('''
+            SELECT timeseriesId, moduleId, valueType, parameterId, locationId, timeseriesType, timeStepId
+            FROM timeseries WHERE timeseriesId=:timeseries_id
+        '''), timeseries_id=timeseries_id).fetchone()
+        CACHE.set_timeseries(timeseries_id, **timeseries)
     assert timeseries, f'Timeseries does not exists: {timeseries_id}'
     return jsonify(**timeseries)
 
@@ -100,4 +106,5 @@ def timeseries_delete(timeseries_id):
         DELETE FROM timeseries
         WHERE timeseriesId=:timeseries_id
     '''), timeseries_id=timeseries_id)
+    CACHE.delete(timeseries_id)
     return jsonify(timeseries_id)

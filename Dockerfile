@@ -9,7 +9,8 @@ RUN pip3 install \
   flask \
   webargs==4.1.2 \
   sqlalchemy==1.3.0b1 \
-  https://cdn.mysql.com/Downloads/Connector-Python/mysql-connector-python-2.0.4.zip#md5=3df394d89300db95163f17c843ef49df
+  https://cdn.mysql.com/Downloads/Connector-Python/mysql-connector-python-2.0.4.zip#md5=3df394d89300db95163f17c843ef49df \
+  redis
 
 COPY . /src
 RUN cd /src && python3 setup.py develop

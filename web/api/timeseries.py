@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from sqlalchemy import text as sql
+import logging
 
 from web import util
 from web.api import parameter as t_parameter, location as t_location, timestep as t_timestep
@@ -35,15 +36,20 @@ def timeseries_create():
             t_parameter.db_parameter_create(conn, parameter)
             exist_parameter_id = parameter
         assert exist_parameter_id, f'Parameter does not exists: parameter_id'
+        # ValueType
+        assert data.get('valueType') in ['Scalar', 'Vector', 'Grid'], 'ValueType does not have a valid value'
         # Location
         assert 'locationId' in data or 'location' in data, f'`locationId` or `location` should be provided'
         location = data.get('location', {})
         data['locationId'] = location_id = data.get('locationId', location.get('locationId'))
         exist_location_id = conn.execute(sql('''
+            SELECT locationId FROM grids WHERE locationId=:location_id
+        ''' if data['valueType'] == 'Grid' else '''
             SELECT locationId FROM locations WHERE locationId=:location_id
         '''), location_id=location_id).fetchone()
         if exist_location_id is None and location:
-            t_location.db_location_create(conn, location)
+            t_location.db_regular_grid_create(conn, location) if data['valueType'] == 'Grid' \
+                else t_location.db_location_create(conn, location)
             exist_location_id = location
         assert exist_location_id, f'Location does not exists: {location_id}'
         # TimeStep
@@ -59,8 +65,6 @@ def timeseries_create():
         assert exist_time_step_id, f'TimeStep does not exists: {time_step_id}'
         # TimeseriesType
         assert data.get('timeseriesType') in ['ExternalHistorical', 'ExternalForecasting', 'SimulatedHistorical', 'SimulatedForecasting'], 'TimeseriesType does not have a valid value'
-        # ValueType
-        assert data.get('valueType') in ['Scalar', 'Vector', 'Grid'], 'ValueType does not have a valid value'
 
         # Create Timeseries
         timeseries = util.get_timeseries(**data)

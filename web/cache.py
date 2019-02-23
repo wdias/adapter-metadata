@@ -15,7 +15,7 @@ class Cache:
             'parameterId': parameterId,
             'locationId': locationId,
             'timeseriesType': timeseriesType,
-            'timeStepI': timeStepId
+            'timeStepId': timeStepId
         })
 
     def set(self, key: str, data: dict):

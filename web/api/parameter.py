@@ -29,12 +29,16 @@ def db_parameter_create(conn, data):
 
 @bp.route("/parameter/<parameter_id>", methods=['GET'])
 def parameter_get(parameter_id):
+    parameter = db_parameter_get(parameter_id)
+    assert parameter, f'Parameter does not exists: {parameter_id}'
+    return jsonify(**parameter)
+
+def db_parameter_get(parameter_id):
     parameter = ENGINE.execute(sql('''
         SELECT parameterId, variable, unit, parameterType 
         FROM parameters WHERE parameterId=:parameter_id
     '''), parameter_id=parameter_id).fetchone()
-    assert parameter, f'Parameter does not exists: {parameter_id}'
-    return jsonify(**parameter)
+    return parameter
 
 
 @bp.route("/parameter", methods=['GET'])

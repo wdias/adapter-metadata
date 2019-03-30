@@ -32,12 +32,17 @@ def db_location_create(conn, data):
 @bp.route("/point/<location_id>", methods=['GET'])
 def location_point_get(location_id):
     assert location_id, 'LocationId should provided.'
+    location = db_location_point_get(location_id)
+    assert location, f'Location does not exists: {location_id}'
+    return jsonify(**location)
+
+
+def db_location_point_get(location_id):
     location = ENGINE.execute(sql('''
         SELECT locationId, name, lat, lon 
         FROM locations WHERE locationId=:location_id
     '''), location_id=location_id).fetchone()
-    assert location, f'Location does not exists: {location_id}'
-    return jsonify(**location)
+    return location
 
 
 @bp.route("/point", methods=['GET'])
@@ -97,6 +102,11 @@ def db_regular_grid_create(conn, data):
 
 @bp.route("/regular-grid/<location_id>", methods=['GET'])
 def location_regular_grid_get(location_id):
+    location = db_regular_grid_get(location_id)
+    return jsonify(**location)
+
+
+def db_regular_grid_get(location_id):
     import json
     location = ENGINE.execute(sql('''
         SELECT locationId, gridType, rows, columns, geoDatum, dataType, data, description 
@@ -107,7 +117,7 @@ def location_regular_grid_get(location_id):
     location[location['dataType']] = json.loads(location['data'])
     del location['dataType']
     del location['data']
-    return jsonify(**location)
+    return location
 
 
 @bp.route("/regular-grid", methods=['GET'])

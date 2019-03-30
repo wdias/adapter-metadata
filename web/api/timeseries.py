@@ -71,7 +71,7 @@ def timeseries_create():
         CACHE.set_timeseries(f'f-{timeseries["timeseriesId"]}', **timeseries)
         return jsonify(timeseries)
 
-def timeseries_get_full(timeseries_id):
+def db_timeseries_get_full(timeseries_id):
     timeseries = CACHE.get(f'f-{timeseries_id}')
     print("cached full:", timeseries)
     if timeseries is None:
@@ -84,12 +84,9 @@ def timeseries_get_full(timeseries_id):
                 else t_location.db_location_point_get(timeseries['locationId'])
         timeseries['timeStep'] = t_timeStep.db_time_step_get(timeseries['timeStepId'])
         CACHE.set_timeseries(f'f-{timeseries_id}', **timeseries)
-    assert timeseries, f'Timeseries does not exists: {timeseries_id}'
     return timeseries
 
-
-@bp.route("/timeseries/<timeseries_id>", methods=['GET'])
-def timeseries_get(timeseries_id):
+def db_timeseries_get(timeseries_id):
     timeseries = CACHE.get(timeseries_id)
     print("cached:", timeseries)
     if timeseries is None:
@@ -98,9 +95,16 @@ def timeseries_get(timeseries_id):
             FROM timeseries WHERE timeseriesId=:timeseries_id
         '''), timeseries_id=timeseries_id).fetchone()
         CACHE.set_timeseries(timeseries_id, **timeseries)
+    return timeseries
+
+@bp.route("/timeseries/<timeseries_id>", methods=['GET'])
+def timeseries_get(timeseries_id):
+    if req.args.get('full') is not None:
+        timeseries = db_timeseries_get_full(timeseries_id)
+    else:
+        timeseries = db_timeseries_get(timeseries_id)
     assert timeseries, f'Timeseries does not exists: {timeseries_id}'
     return jsonify(**timeseries)
-
 
 @bp.route("/timeseries", methods=['GET'])
 def timeseries_list():
@@ -115,7 +119,6 @@ def timeseries_list():
         FROM timeseries
     ''' + q), **request.args.to_dict()).fetchall()
     return jsonify([dict(i) for i in timeseries])
-
 
 @bp.route("/timeseries/<timeseries_id>", methods=['DELETE'])
 def timeseries_delete(timeseries_id):

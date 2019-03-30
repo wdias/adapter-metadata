@@ -29,10 +29,12 @@ def timeseries_create():
         assert 'parameterId' in data or 'parameter' in data, f'`parameterId` or `parameter` should be provided'
         parameter = data.get('parameter', {})
         data['parameterId'] = data.get('parameterId', parameter.get('parameterId'))
-        exist_parameter = dict(t_parameter.db_parameter_get(data['parameterId']))
+        exist_parameter = t_parameter.db_parameter_get(data['parameterId'])
         if exist_parameter is None and parameter:
             t_parameter.db_parameter_create(conn, parameter)
             exist_parameter = parameter
+        else:
+            exist_parameter = dict(exist_parameter)
         assert exist_parameter, f'Parameter does not exists: {data["parameterId"]}'
         # ValueType
         assert data.get('valueType') in ['Scalar', 'Vector', 'Grid'], 'ValueType does not have a valid value'
@@ -40,21 +42,25 @@ def timeseries_create():
         assert 'locationId' in data or 'location' in data, f'`locationId` or `location` should be provided'
         location = data.get('location', {})
         data['locationId'] = data.get('locationId', location.get('locationId'))
-        exist_location = dict(t_location.db_regular_grid_get(data['locationId']) if data['valueType'] == 'Grid' else \
-            t_location.db_location_point_get(data['locationId']))
+        exist_location = t_location.db_regular_grid_get(data['locationId']) if data['valueType'] == 'Grid' else \
+            t_location.db_location_point_get(data['locationId'])
         if exist_location is None and location:
             t_location.db_regular_grid_create(conn, location) if data['valueType'] == 'Grid' \
                 else t_location.db_location_create(conn, location)
             exist_location = location
+        else:
+            exist_location = dict(exist_location)
         assert exist_location, f'Location does not exists: {data["locationId"]}'
         # TimeStep
         assert 'timeStepId' in data or 'timeStep' in data, f'`timeStepId` or `timeStep` should be provided'
         time_step = data.get('timeStep', {})
         data['timeStepId'] = data.get('timeStepId', time_step.get('timeStepId'))
-        exist_time_step = dict(t_timestep.db_time_step_get(data['timeStepId']))
+        exist_time_step = t_timestep.db_time_step_get(data['timeStepId'])
         if exist_time_step is None and time_step:
             t_timestep.db_time_step_create(conn, time_step)
             exist_time_step = time_step
+        else:
+            exist_time_step = dict(exist_time_step)
         assert exist_time_step, f'TimeStep does not exists: {data["timeStepId"]}'
         # TimeseriesType
         assert data.get('timeseriesType') in ['ExternalHistorical', 'ExternalForecasting', 'SimulatedHistorical', 'SimulatedForecasting'], 'TimeseriesType does not have a valid value'

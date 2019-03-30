@@ -18,6 +18,17 @@ class Cache:
             'timeStepId': timeStepId
         })
 
+    def set_full_timeseries(self, key: str, timeseriesId, moduleId, valueType, parameter, location, timeseriesType, timeStep, *args, **kargs):
+        return self.set(key, {
+            'timeseriesId': timeseriesId,
+            'moduleId': moduleId,
+            'valueType': valueType,
+            'parameter': parameter,
+            'location': location,
+            'timeseriesType': timeseriesType,
+            'timeStep': timeStep
+        })
+
     def set(self, key: str, data: dict):
         return self.redis.set(key, json.dumps(data))
 

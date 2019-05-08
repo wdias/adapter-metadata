@@ -86,9 +86,9 @@ def db_timeseries_get_full(timeseries_id):
             FROM timeseries WHERE timeseriesId=:timeseries_id
         '''), timeseries_id=timeseries_id).fetchone()
         timeseries['parameter'] = t_parameter.db_parameter_get(timeseries['parameterId'])
-        timeseries['location'] =  t_location.db_regular_grid_get(timeseries['locationId']) if data['valueType'] == 'Grid' \
+        timeseries['location'] = t_location.db_regular_grid_get(timeseries['locationId']) if timeseries['valueType'] == 'Grid' \
                 else t_location.db_location_point_get(timeseries['locationId'])
-        timeseries['timeStep'] = t_timeStep.db_time_step_get(timeseries['timeStepId'])
+        timeseries['timeStep'] = t_timestep.db_time_step_get(timeseries['timeStepId'])
         CACHE.set_timeseries(f'f-{timeseries_id}', **timeseries)
     return timeseries
 
@@ -105,7 +105,7 @@ def db_timeseries_get(timeseries_id):
 
 @bp.route("/timeseries/<timeseries_id>", methods=['GET'])
 def timeseries_get(timeseries_id):
-    if req.args.get('full') is not None:
+    if request.args.get('full') is not None:
         timeseries = db_timeseries_get_full(timeseries_id)
     else:
         timeseries = db_timeseries_get(timeseries_id)

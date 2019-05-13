@@ -103,6 +103,7 @@ def db_regular_grid_create(conn, data):
 @bp.route("/regular-grid/<location_id>", methods=['GET'])
 def location_regular_grid_get(location_id):
     location = db_regular_grid_get(location_id)
+    assert location, f'Location does not exists: {location_id}'
     return jsonify(**location)
 
 
@@ -112,11 +113,11 @@ def db_regular_grid_get(location_id):
         SELECT locationId, gridType, rows, columns, geoDatum, dataType, data, description 
         FROM grids WHERE locationId=:location_id
     '''), location_id=location_id).fetchone()
-    assert location, f'Location does not exists: {location_id}'
-    location = dict(location)
-    location[location['dataType']] = json.loads(location['data'])
-    del location['dataType']
-    del location['data']
+    if location:
+        location = dict(location)
+        location[location['dataType']] = json.loads(location['data'])
+        del location['dataType']
+        del location['data']
     return location
 
 

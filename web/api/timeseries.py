@@ -100,7 +100,9 @@ def db_timeseries_get(timeseries_id):
             SELECT timeseriesId, moduleId, valueType, parameterId, locationId, timeseriesType, timeStepId
             FROM timeseries WHERE timeseriesId=:timeseries_id
         '''), timeseries_id=timeseries_id).fetchone()
-        CACHE.set_timeseries(timeseries_id, **timeseries)
+        print(timeseries)
+        if timeseries:
+            CACHE.set_timeseries(timeseries_id, **timeseries)
     return timeseries
 
 @bp.route("/timeseries/<timeseries_id>", methods=['GET'])
